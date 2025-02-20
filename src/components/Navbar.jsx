@@ -19,7 +19,7 @@ const Navbar = () => {
     <div className="border-b border-gray-300 ">
       <div className="navbar container mx-auto px-4">
         <div className="navbar-start">
-          <Link to="/" className=" text-xl">
+          <Link to="/" className="font-semibold text-xl">
             TODO
           </Link>
         </div>
@@ -36,12 +36,15 @@ const Navbar = () => {
         </div>
         <div className="navbar-end">
           {user && user?.email ? (
-            <button
-              onClick={handleLogOut}
-              className="btn bg-primary text-white"
-            >
-              Logout
-            </button>
+            <div className="flex items-center">
+              <p>{user && user?.displayName}</p>
+              <button
+                onClick={handleLogOut}
+                className="btn bg-primary text-white"
+              >
+                Logout
+              </button>
+            </div>
           ) : (
             <Link to="/login" className="btn bg-green-600 text-white">
               Login

@@ -1,6 +1,7 @@
-import { useLoaderData, useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import useAuth from "../../hooks/useAuth";
-import { useEffect } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const SignUp = () => {
   document.title = "To-Do | SignUp";
@@ -13,7 +14,22 @@ const SignUp = () => {
 
   const socialLogin = () => {
     googleSignIn().then((result) => {
+      console.log("result after login: ", result?.user);
       if (result.user) {
+        toast.success("firebase user created true!");
+        const userInfo = {
+          name: result?.user?.displayName,
+          email: result?.user?.email,
+        };
+        axios
+          .post("http://localhost:5000/users", userInfo)
+          .then((res) => {
+            console.log(res.data);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+
         navigate(from, { replace: true });
         // navigate("/");
       }
