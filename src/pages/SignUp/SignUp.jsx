@@ -18,6 +18,7 @@ const SignUp = () => {
       if (result.user) {
         toast.success("firebase user created true!");
         const userInfo = {
+          userId: result?.user?.uid,
           name: result?.user?.displayName,
           email: result?.user?.email,
         };

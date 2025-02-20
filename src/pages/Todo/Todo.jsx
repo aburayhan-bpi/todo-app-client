@@ -1,217 +1,290 @@
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import moment from "moment/moment";
 import { useState } from "react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import moment from "moment";
-import { FiTrash } from "react-icons/fi";
-import { FaRegEdit } from "react-icons/fa";
-
-const initialTasks = {
-  todo: [
-    {
-      id: "1",
-      title: "Task 1",
-      description: "First task",
-      timestamp: moment().format("LLL"),
-    },
-  ],
-  inProgress: [
-    {
-      id: "2",
-      title: "Task 2",
-      description: "Second task",
-      timestamp: moment().format("LLL"),
-    },
-  ],
-  done: [
-    {
-      id: "3",
-      title: "Task 3",
-      description: "Completed task",
-      timestamp: moment().format("LLL"),
-    },
-  ],
-};
+import toast from "react-hot-toast";
+import useAuth from "../../hooks/useAuth";
+import { RiCalendarTodoLine, RiProgress1Line } from "react-icons/ri";
+import { CiEdit } from "react-icons/ci";
+import { MdDeleteOutline } from "react-icons/md";
+import { IoCheckmarkDone } from "react-icons/io5";
 
 const Todo = () => {
-  const [tasks, setTasks] = useState(initialTasks);
-  const [newTask, setNewTask] = useState({ title: "", description: "" });
-  const [editing, setEditing] = useState(null);
-  console.log("tasks: ", tasks);
-  console.log("new task", newTask);
-  console.log("editing", editing);
+  const { user } = useAuth();
 
-  const onDragEnd = (result) => {
-    if (!result.destination) return;
+  const {
+    data: tasks = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["tasks", user?.email],
+    queryFn: async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/tasks?email=${user?.email}`
+        );
+        return res.data || []; // Ensure an array is returned, even if data is empty
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        return []; // Return empty array in case of error
+      }
+    },
+  });
 
-    const { source, destination } = result;
-    const sourceColumn = source.droppableId;
-    const destinationColumn = destination.droppableId;
+  console.log(tasks);
 
-    const updatedTasks = { ...tasks };
-    const movedTask = updatedTasks[sourceColumn].splice(source.index, 1)[0];
+  // const [allTasks, allSetTasks] = useState({});
 
-    updatedTasks[destinationColumn].splice(destination.index, 0, movedTask);
-    setTasks(updatedTasks);
+  const handleMoveToInProgress = (taskId) => {
+    // Logic to move task to In Progress
   };
 
-  const addTask = () => {
-    if (newTask.title.trim() === "" || newTask.title.length > 50) return;
+  const handleMoveToDone = (taskId) => {
+    // Logic to move task to Done
+  };
+  const handleMoveToDo = (taskId) => {
+    // Logic to move task to Done
+  };
 
-    const taskToAdd = {
-      id: Date.now().toString(),
-      title: newTask.title,
-      description: newTask.description.slice(0, 200),
-      timestamp: moment().format("LLL"),
+  const handleDelete = (taskId) => {
+    // Logic to delete task
+    console.log(taskId);
+
+    axios.delete(`http://localhost:5000/tasks/${taskId}`).then((res) => {
+      console.log(res.data);
+      if (res.data.deletedCount > 0) {
+        toast.success("Task deleted.");
+        refetch();
+      }
+    });
+  };
+
+  const handleEdit = (taskId) => {
+    // Logic to edit task, can open a modal or a form
+    console.log("Edit task with ID:", taskId);
+  };
+
+  const handleAddTask = (e) => {
+    e.preventDefault(); // Prevent form submission
+
+    const formElement = e.target;
+    const title = formElement.title.value; // Accessing the title input
+    const description = formElement.description.value; // Accessing the description textarea
+    const category = formElement.category.value; // Accessing the category select
+
+    const newTask = {
+      id: new Date().getTime(), // Generate a unique ID (you can replace this with a backend-generated ID)
+      title: title,
+      description: description,
+      category: category,
+      taskUser: user?.email,
+      timestamp: moment().format("MMMM Do YYYY, h:mm:ss a"), // You can adjust this format as per your requirement
     };
+    console.log(newTask);
 
-    setTasks((prev) => ({
-      ...prev,
-      todo: [...prev.todo, taskToAdd],
-    }));
-    setNewTask({ title: "", description: "" });
-  };
+    axios
+      .post("http://localhost:5000/tasks", newTask)
+      .then((res) => {
+        console.log(res.data);
+        if (res.data?.insertedId) {
+          toast.success("Task added");
+          refetch();
+        }
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
 
-  const deleteTask = (column, index) => {
-    setTasks((prev) => {
-      const updatedColumn = [...prev[column]];
-      updatedColumn.splice(index, 1);
-      return { ...prev, [column]: updatedColumn };
-    });
-  };
-
-  const startEditing = (column, index) => {
-    if (editing && editing.column === column && editing.index === index) {
-      // If clicking the same task again, reset to add mode
-      setEditing(null);
-      setNewTask({ title: "", description: "" });
-    } else {
-      // Start editing a new task
-      const task = tasks[column][index];
-      setEditing({ column, index, task });
-      setNewTask({ title: task.title, description: task.description });
-    }
-  };
-
-  const updateTask = () => {
-    if (newTask.title.trim() === "" || newTask.title.length > 50) return;
-
-    setTasks((prev) => {
-      const updatedColumn = [...prev[editing.column]];
-      updatedColumn[editing.index] = {
-        ...updatedColumn[editing.index],
-        title: newTask.title,
-        description: newTask.description.slice(0, 200),
-        timestamp: moment().format("LLL"), // Update timestamp
-      };
-      return { ...prev, [editing.column]: updatedColumn };
-    });
-
-    setEditing(null);
-    setNewTask({ title: "", description: "" });
+    // Reset form
+    formElement.reset();
   };
 
   return (
-    <div className="p-6 min-h-screen bg-gray-100 flex flex-col items-center">
-      <h2 className="text-2xl font-bold mb-4">Task Management</h2>
+    <div className="p-6 space-y-4">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Task Management</h1>
 
-      {/* Add/Edit Task Input */}
-      <div className="flex flex-col mb-4 w-full max-w-md bg-white p-4 rounded-md shadow">
+      {/* Add Task Form */}
+      <form
+        onSubmit={handleAddTask}
+        className="bg-white p-6 rounded-lg shadow-md mb-8"
+      >
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Add New Task
+        </h2>
         <input
           type="text"
-          className="p-2 border rounded mb-2"
-          placeholder="Task Title (Max 50 chars)"
-          value={newTask.title}
-          maxLength={50}
-          onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+          name="title" // Add name attribute for title
+          placeholder="Task Title"
+          className="w-full p-2 mb-4 border rounded-md"
+          required
         />
         <textarea
-          className="p-2 border rounded mb-2"
-          placeholder="Description (Optional, Max 200 chars)"
-          value={newTask.description}
-          maxLength={200}
-          onChange={(e) =>
-            setNewTask({ ...newTask, description: e.target.value })
-          }
+          placeholder="Task Description"
+          name="description" // Add name attribute for description
+          className="w-full p-2 mb-4 border rounded-md"
+          required
         />
-        {editing ? (
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded"
-            onClick={updateTask}
-          >
-            Update Task
-          </button>
-        ) : (
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-            onClick={addTask}
-          >
-            Add Task
-          </button>
-        )}
-      </div>
+        <select
+          className="w-full p-2 mb-4 border rounded-md"
+          name="category" // Add name attribute for category
+        >
+          <option value="todo">To-Do</option>
+          <option value="in-progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+        <button
+          type="submit"
+          className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
+        >
+          Add Task
+        </button>
+      </form>
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-3 gap-4 w-full max-w-4xl">
-          {["todo", "inProgress", "done"].map((column) => (
-            <Droppable key={column} droppableId={column}>
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className="bg-white p-4 rounded-md shadow-md min-h-[300px] flex flex-col"
-                >
-                  <h3 className="font-semibold text-lg capitalize mb-2">
-                    {column.replace(/([A-Z])/g, " $1")}
-                  </h3>
-
-                  {tasks[column].map((task, index) => (
-                    <Draggable
-                      key={task.id}
-                      draggableId={task.id}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className="p-2 my-2 bg-blue-100 rounded shadow flex flex-col"
-                        >
-                          <div className="flex justify-between">
-                            <strong>{task.title}</strong>
-                            <div>
-                              <button
-                                className="text-yellow-500 text-sm mr-2"
-                                onClick={() => startEditing(column, index)}
-                              >
-                                <FaRegEdit />
-                              </button>
-                              <button
-                                className="text-red-500 text-sm"
-                                onClick={() => deleteTask(column, index)}
-                              >
-                                <FiTrash />
-                              </button>
-                            </div>
-                          </div>
-                          {task.description && (
-                            <p className="text-gray-700 text-sm mt-1">
-                              {task.description}
-                            </p>
-                          )}
-                          <p className="text-gray-500 text-xs mt-1">
-                            📅 {task.timestamp}
-                          </p>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+      {/* Task Columns */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* To-Do Column */}
+        <div className="bg-gray-50 p-4 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">To-Do</h2>
+          {tasks
+            .filter((task) => task.category === "todo")
+            .map((task) => (
+              <div
+                key={task.id}
+                className="bg-white p-4 rounded-lg shadow-sm mb-4"
+              >
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {task.title}
+                </h3>
+                <p className="text-sm text-gray-600 mt-2">{task.description}</p>
+                <p className="text-xs text-gray-400 mt-2">
+                  Timestamp: {task.timestamp}
+                </p>
+                <div className="mt-4 flex justify-between space-x-2">
+                  <button
+                    onClick={() => handleMoveToInProgress(task.id)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <RiProgress1Line />
+                  </button>
+                  <button
+                    onClick={() => handleMoveToDone(task.id)}
+                    className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <IoCheckmarkDone />
+                  </button>
+                  <button
+                    onClick={() => handleEdit(task.id)}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <CiEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <MdDeleteOutline />
+                  </button>
                 </div>
-              )}
-            </Droppable>
-          ))}
+              </div>
+            ))}
         </div>
-      </DragDropContext>
+
+        {/* In Progress Column */}
+        <div className="bg-gray-50 p-4 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            In Progress
+          </h2>
+          {tasks
+            .filter((task) => task.category === "in-progress")
+            .map((task) => (
+              <div
+                key={task.id}
+                className="bg-white p-4 rounded-lg shadow-sm mb-4"
+              >
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {task.title}
+                </h3>
+                <p className="text-sm text-gray-600 mt-2">{task.description}</p>
+                <p className="text-xs text-gray-400 mt-2">
+                  Timestamp: {task.timestamp}
+                </p>
+                <div className="mt-4 flex justify-between space-x-2">
+                  <button
+                    onClick={() => handleMoveToDo(task.id)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <RiCalendarTodoLine />
+                  </button>
+                  <button
+                    onClick={() => handleMoveToDone(task.id)}
+                    className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <IoCheckmarkDone />
+                  </button>
+                  <button
+                    onClick={() => handleEdit(task.id)}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <CiEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <MdDeleteOutline />
+                  </button>
+                </div>
+              </div>
+            ))}
+        </div>
+
+        {/* Done Column */}
+        <div className="bg-gray-50 p-4 rounded-lg shadow-md">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">Done</h2>
+          {tasks
+            .filter((task) => task.category === "done")
+            .map((task) => (
+              <div
+                key={task.id}
+                className="bg-white p-4 rounded-lg shadow-sm mb-4"
+              >
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {task.title}
+                </h3>
+                <p className="text-sm text-gray-600 mt-2">{task.description}</p>
+                <p className="text-xs text-gray-400 mt-2">
+                  Timestamp: {task.timestamp}
+                </p>
+                <div className="mt-4 flex justify-between space-x-2">
+                  <button
+                    onClick={() => handleMoveToDo(task.id)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <RiCalendarTodoLine />
+                  </button>
+                  <button
+                    onClick={() => handleMoveToInProgress(task.id)}
+                    className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <RiProgress1Line />
+                  </button>
+                  <button
+                    onClick={() => handleEdit(task.id)}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <CiEdit />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(task.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg"
+                  >
+                    <MdDeleteOutline />
+                  </button>
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
     </div>
   );
 };
