@@ -1,4 +1,5 @@
 const Home = () => {
+  document.title='TODO | Home'
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="max-w-lg w-full bg-white p-8 rounded-lg shadow-xl">
