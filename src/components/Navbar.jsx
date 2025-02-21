@@ -7,6 +7,7 @@ import { useState } from "react";
 import { IoIosArrowUp } from "react-icons/io";
 import { LuListTodo } from "react-icons/lu";
 import { GoHome } from "react-icons/go";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
   const { user, logOut } = useAuth();
@@ -15,6 +16,7 @@ const Navbar = () => {
   const handleLogOut = () => {
     logOut()
       .then(() => {
+        toast.success('Logged out!')
         navigate("/");
       })
       .catch((err) => {
