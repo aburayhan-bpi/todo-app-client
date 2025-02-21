@@ -1,17 +1,35 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import moment from "moment/moment";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import useAuth from "../../hooks/useAuth";
 import { RiCalendarTodoLine, RiProgress1Line } from "react-icons/ri";
 import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
 import { IoCheckmarkDone } from "react-icons/io5";
+import { useForm } from "react-hook-form";
 
 const Todo = () => {
+  const [editableTask, setEditableTask] = useState({});
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      id: editableTask?.id,
+      title: editableTask?.title || "",
+      description: editableTask?.description || "",
+      category: editableTask?.category || "todo", // Default to 'todo'
+    },
+  });
+
   const { user } = useAuth();
   const currentTime = moment().format("MMMM Do YYYY, h:mm:ss a");
+
   const {
     data: tasks = [],
     isLoading,
@@ -31,7 +49,7 @@ const Todo = () => {
     },
   });
 
-  console.log(tasks);
+  // console.log(tasks);
 
   // const [allTasks, allSetTasks] = useState({});
 
@@ -88,9 +106,65 @@ const Todo = () => {
     });
   };
 
-  const handleEdit = (taskId) => {
+  const handleEditModal = (taskId) => {
     // Logic to edit task, can open a modal or a form
-    console.log("Edit task with ID:", taskId);
+    console.log(taskId);
+    document.getElementById("my_modal_5").showModal();
+    const task = tasks.find((task) => task.id === taskId);
+    setEditableTask(task);
+    console.log(task);
+  };
+  useEffect(() => {
+    if (editableTask) {
+      setValue("id", editableTask?.id);
+      setValue("title", editableTask?.title || "");
+      setValue("description", editableTask?.description || "");
+      setValue("category", editableTask?.category || "todo");
+    }
+  }, [editableTask, setValue]);
+  // const handleUpdateTask = (e) => {
+  //   // console.log(id);
+  //   e.preventDefault(); // Prevent form submission
+
+  //   const formElement = e.target;
+  //   const title = formElement.title.value; // Accessing the title input
+  //   const description = formElement.description.value;
+  //   const updateTaskInfo = {
+  //     title,
+  //     description,
+  //     currentTime,
+  //   };
+  //   console.log(updateTaskInfo);
+  // };
+  const handleClose = () => {
+    document.getElementById("my_modal_5").close();
+    reset();
+  };
+  const onSubmit = (data) => {
+    const updatedTask = {
+      title: data?.title,
+      description: data?.description,
+      category: data?.category,
+      timestamp: currentTime,
+    };
+
+    axios
+      .put(`http://localhost:5000/tasks/${editableTask?.id}`, updatedTask)
+      .then((res) => {
+        console.log(res.data);
+        if (res.data.matchedCount > 0 || res.data.modifiedCount > 0) {
+          toast.success("Task updated.");
+          refetch();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    // console.log(updatedTask);
+
+    // reset();
+    document.getElementById("my_modal_5").close();
   };
 
   const handleAddTask = (e) => {
@@ -109,7 +183,7 @@ const Todo = () => {
       taskUser: user?.email,
       timestamp: currentTime, // You can adjust this format as per your requirement
     };
-    console.log(newTask);
+    // console.log(newTask);
 
     axios
       .post("http://localhost:5000/tasks", newTask)
@@ -144,17 +218,17 @@ const Todo = () => {
           type="text"
           name="title" // Add name attribute for title
           placeholder="Task Title"
-          className="w-full p-2 mb-4 border rounded-md"
+          className="w-full p-2 mb-4 border border-gray-200 rounded-md"
           required
         />
         <textarea
           placeholder="Task Description"
           name="description" // Add name attribute for description
-          className="w-full p-2 mb-4 border rounded-md"
+          className="w-full p-2 mb-4 border border-gray-200 rounded-md"
           required
         />
         <select
-          className="w-full p-2 mb-4 border rounded-md"
+          className="w-full p-2 mb-4 border border-gray-200 rounded-md"
           name="category" // Add name attribute for category
         >
           <option value="todo">To-Do</option>
@@ -202,7 +276,7 @@ const Todo = () => {
                     <IoCheckmarkDone />
                   </button>
                   <button
-                    onClick={() => handleEdit(task.id)}
+                    onClick={() => handleEditModal(task.id)}
                     className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg"
                   >
                     <CiEdit />
@@ -251,7 +325,7 @@ const Todo = () => {
                     <IoCheckmarkDone />
                   </button>
                   <button
-                    onClick={() => handleEdit(task.id)}
+                    onClick={() => handleEditModal(task.id)}
                     className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg"
                   >
                     <CiEdit />
@@ -298,7 +372,7 @@ const Todo = () => {
                     <RiProgress1Line />
                   </button>
                   <button
-                    onClick={() => handleEdit(task.id)}
+                    onClick={() => handleEditModal(task.id)}
                     className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg"
                   >
                     <CiEdit />
@@ -313,6 +387,96 @@ const Todo = () => {
               </div>
             ))}
         </div>
+        {/* modal */}
+        {/* Open the modal using document.getElementById('ID').showModal() method */}
+        {/* <button
+          className="btn"
+          onClick={() => document.getElementById("my_modal_5").showModal()}
+        >
+          open modal
+        </button> */}
+        <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
+          <div className="modal-box relative">
+            {/* Close Button in the Top Right Corner */}
+            <button
+              className="absolute top-2 right-2 pr-2 cursor-pointer text-gray-600 hover:text-gray-900 transition"
+              onClick={handleClose}
+            >
+              ✕
+            </button>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <label htmlFor="title" className="block font-medium">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  {...register("title", { required: true })}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                  placeholder="Enter title"
+                  defaultValue={editableTask?.title}
+                />
+                {errors.title && (
+                  <span className="text-red-600 text-xs">
+                    This field is required
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="description" className="block font-medium">
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  {...register("description", { required: true })}
+                  rows="4"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                  placeholder="Enter description"
+                  defaultValue={editableTask?.description}
+                ></textarea>
+                {errors.description && (
+                  <span className="text-red-600 text-xs">
+                    This field is required
+                  </span>
+                )}
+              </div>
+              <div>
+                <select
+                  className="w-full p-2 mb-4 border border-gray-200 rounded-md"
+                  {...register("category", { required: true })}
+                  // defaultValue={defaultValues?.category}
+                >
+                  <option value="todo">To-Do</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="done">Done</option>
+                </select>
+                {errors.category && (
+                  <span className="text-red-600 text-xs">
+                    This field is required
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Update Task
+              </button>
+            </form>
+
+            {/* <div className="modal-action">
+              <form method="dialog">
+                <button className="btn">Close</button>
+              </form>
+            </div> */}
+          </div>
+        </dialog>
       </div>
     </div>
   );
