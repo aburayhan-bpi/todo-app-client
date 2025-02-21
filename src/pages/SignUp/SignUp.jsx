@@ -16,7 +16,7 @@ const SignUp = () => {
     googleSignIn().then((result) => {
       console.log("result after login: ", result?.user);
       if (result.user) {
-        toast.success("firebase user created true!");
+        toast.success("Login success!");
         const userInfo = {
           userId: result?.user?.uid,
           name: result?.user?.displayName,
