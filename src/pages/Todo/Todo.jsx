@@ -11,6 +11,7 @@ import { IoCheckmarkDone } from "react-icons/io5";
 import { useForm } from "react-hook-form";
 
 const Todo = () => {
+  document.title = "TODO | Task Dashboard";
   const [editableTask, setEditableTask] = useState({});
   const {
     register,
@@ -28,7 +29,8 @@ const Todo = () => {
   });
 
   const { user } = useAuth();
-  const currentTime = moment().format("MMMM Do YYYY, h:mm:ss a");
+  const currentTime = moment().utc().format();
+  // const currentTime = moment().format("MMMM Do YYYY, h:mm:ss a");
 
   const {
     data: tasks = [],
@@ -39,7 +41,7 @@ const Todo = () => {
     queryFn: async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/tasks?email=${user?.email}`
+          `https://todo-task-management-server-omega.vercel.app/tasks?email=${user?.email}`
         );
         return res.data || []; // Ensure an array is returned, even if data is empty
       } catch (error) {
@@ -51,7 +53,9 @@ const Todo = () => {
 
   const handleMoveToCategory = (taskId, category) => {
     axios
-      .put(`http://localhost:5000/tasks/${taskId}?category=${category}`)
+      .put(
+        `https://todo-task-management-server-omega.vercel.app/tasks/${taskId}?category=${category}`
+      )
       .then((res) => {
         if (res.data.modifiedCount > 0) {
           toast.success(`Task moved to ${category}.`);
@@ -61,12 +65,16 @@ const Todo = () => {
   };
 
   const handleDelete = (taskId) => {
-    axios.delete(`http://localhost:5000/tasks/${taskId}`).then((res) => {
-      if (res.data.deletedCount > 0) {
-        toast.success("Task deleted.");
-        refetch();
-      }
-    });
+    axios
+      .delete(
+        `https://todo-task-management-server-omega.vercel.app/tasks/${taskId}`
+      )
+      .then((res) => {
+        if (res.data.deletedCount > 0) {
+          toast.success("Task deleted.");
+          refetch();
+        }
+      });
   };
 
   const handleEditModal = (taskId) => {
@@ -97,7 +105,10 @@ const Todo = () => {
     };
 
     axios
-      .put(`http://localhost:5000/tasks/${editableTask?.id}`, updatedTask)
+      .put(
+        `https://todo-task-management-server-omega.vercel.app/tasks/${editableTask?.id}`,
+        updatedTask
+      )
       .then((res) => {
         if (res.data.matchedCount > 0 || res.data.modifiedCount > 0) {
           toast.success("Task updated.");
@@ -127,7 +138,10 @@ const Todo = () => {
     };
 
     axios
-      .post("http://localhost:5000/tasks", newTask)
+      .post(
+        "https://todo-task-management-server-omega.vercel.app/tasks",
+        newTask
+      )
       .then((res) => {
         if (res.data?.insertedId) {
           toast.success("Task added");
@@ -216,7 +230,11 @@ const Todo = () => {
                 </h3>
                 <p className="text-sm text-gray-600 mt-2">{task.description}</p>
                 <p className="text-xs text-gray-400 mt-2">
-                  Timestamp: {task.timestamp}
+                  Timestamp:{" "}
+                  {moment
+                    .utc(task.timestamp)
+                    .local()
+                    .format("MMMM Do YYYY, h:mm:ss a")}
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
                   <button
@@ -271,7 +289,11 @@ const Todo = () => {
                 </h3>
                 <p className="text-sm text-gray-600 mt-2">{task.description}</p>
                 <p className="text-xs text-gray-400 mt-2">
-                  Timestamp: {task.timestamp}
+                  Timestamp:{" "}
+                  {moment
+                    .utc(task.timestamp)
+                    .local()
+                    .format("MMMM Do YYYY, h:mm:ss a")}
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
                   <button
@@ -324,7 +346,11 @@ const Todo = () => {
                 </h3>
                 <p className="text-sm text-gray-600 mt-2">{task.description}</p>
                 <p className="text-xs text-gray-400 mt-2">
-                  Timestamp: {task.timestamp}
+                  Timestamp:{" "}
+                  {moment
+                    .utc(task.timestamp)
+                    .local()
+                    .format("MMMM Do YYYY, h:mm:ss a")}
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
                   <button

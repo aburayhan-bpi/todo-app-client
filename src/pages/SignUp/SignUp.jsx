@@ -4,7 +4,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const SignUp = () => {
-  document.title = "To-Do | SignUp";
+  document.title = "TODO | SignUp";
   const navigate = useNavigate();
   const location = useLocation();
   const from = location?.state || "/";
@@ -23,7 +23,10 @@ const SignUp = () => {
           email: result?.user?.email,
         };
         axios
-          .post("http://localhost:5000/users", userInfo)
+          .post(
+            "https://todo-task-management-server-omega.vercel.app/users",
+            userInfo
+          )
           .then((res) => {
             console.log(res.data);
           })

@@ -21,7 +21,7 @@ const Todo = () => {
     queryFn: async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/tasks?email=${user?.email}`
+          `https://todo-task-management-server-omega.vercel.app/tasks?email=${user?.email}`
         );
         return res.data || []; // Ensure an array is returned, even if data is empty
       } catch (error) {
@@ -40,7 +40,9 @@ const Todo = () => {
     console.log(taskId);
 
     axios
-      .put(`http://localhost:5000/tasks/${taskId}?category=in-progress`)
+      .put(
+        `https://todo-task-management-server-omega.vercel.app/tasks/${taskId}?category=in-progress`
+      )
       .then((res) => {
         console.log(res.data);
         if (res.data.modifiedCount > 0) {
@@ -53,7 +55,9 @@ const Todo = () => {
   const handleMoveToDone = (taskId) => {
     // Logic to move task to Done
     axios
-      .put(`http://localhost:5000/tasks/${taskId}?category=done`)
+      .put(
+        `https://todo-task-management-server-omega.vercel.app/tasks/${taskId}?category=done`
+      )
       .then((res) => {
         console.log(res.data);
         if (res.data.modifiedCount > 0) {
@@ -65,7 +69,9 @@ const Todo = () => {
   const handleMoveToDo = (taskId) => {
     // Logic to move task to Done
     axios
-      .put(`http://localhost:5000/tasks/${taskId}?category=todo`)
+      .put(
+        `https://todo-task-management-server-omega.vercel.app/tasks/${taskId}?category=todo`
+      )
       .then((res) => {
         console.log(res.data);
         if (res.data.modifiedCount > 0) {
@@ -79,13 +85,17 @@ const Todo = () => {
     // Logic to delete task
     console.log(taskId);
 
-    axios.delete(`http://localhost:5000/tasks/${taskId}`).then((res) => {
-      console.log(res.data);
-      if (res.data.deletedCount > 0) {
-        toast.success("Task deleted.");
-        refetch();
-      }
-    });
+    axios
+      .delete(
+        `https://todo-task-management-server-omega.vercel.app/tasks/${taskId}`
+      )
+      .then((res) => {
+        console.log(res.data);
+        if (res.data.deletedCount > 0) {
+          toast.success("Task deleted.");
+          refetch();
+        }
+      });
   };
 
   const handleEdit = (taskId) => {
@@ -112,7 +122,10 @@ const Todo = () => {
     console.log(newTask);
 
     axios
-      .post("http://localhost:5000/tasks", newTask)
+      .post(
+        "https://todo-task-management-server-omega.vercel.app/tasks",
+        newTask
+      )
       .then((res) => {
         console.log(res.data);
         if (res.data?.insertedId) {
