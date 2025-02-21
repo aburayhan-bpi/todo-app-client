@@ -4,8 +4,8 @@
 Todo Task Management is a modern web-based task management application built using **React, Firebase, and MongoDB**. This application allows users to create, update, and manage their tasks efficiently. It features **drag-and-drop task organization**, real-time updates, user authentication, and a responsive UI.
 
 ## 🌍 Live Links
-- **Live Demo:** [Your Deployed Link Here](https://todo-task-management-53f91.web.app)
-- **Backend API:** [Your API Link Here](https://todo-task-management-server-omega.vercel.app)
+- **Live Link:** [Live Link](https://todo-task-management-53f91.web.app)
+- **Backend API:** [Backend API](https://todo-task-management-server-omega.vercel.app)
 - **GitHub Repository:** [GitHub Repo](https://github.com/aburayhan-bpi/todo-app-server.git)
 
 ## 🛠 Tech Stack
@@ -13,8 +13,36 @@ Todo Task Management is a modern web-based task management application built usi
 - **Backend:** Express.js, MongoDB
 - **Authentication:** Firebase
 - **State Management:** React Query, React Hook Form
-- **Drag & Drop:** DnD Kit, React DnD
+- **Drag & Drop:** JavaScript
 - **Utilities:** Axios, Moment.js
+
+## 📦 Dependencies
+```json
+{
+  "dependencies": {
+    "@dnd-kit/accessibility": "^3.1.1",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@hello-pangea/dnd": "^18.0.1",
+    "@tailwindcss/vite": "^4.0.7",
+    "@tanstack/react-query": "^5.66.7",
+    "axios": "^1.7.9",
+    "firebase": "^11.3.1",
+    "moment": "^2.30.1",
+    "react": "^19.0.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dom": "^19.0.0",
+    "react-helmet": "^6.1.0",
+    "react-hook-form": "^7.54.2",
+    "react-hot-toast": "^2.5.2",
+    "react-icons": "^5.5.0",
+    "react-router": "^7.2.0",
+    "react-router-dom": "^7.2.0",
+    "tailwindcss": "^4.0.7"
+  }
+}
+```
 
 ## 🎯 Features
 - ✅ **User Authentication** (Firebase Authentication)
