@@ -173,13 +173,13 @@ const Todo = () => {
     const formElement = e.target;
     const title = formElement.title.value; // Accessing the title input
     const description = formElement.description.value; // Accessing the description textarea
-    const category = formElement.category.value; // Accessing the category select
+    // const category = formElement.category.value; // Accessing the category select
 
     const newTask = {
       id: new Date().getTime(), // Generate a unique ID (you can replace this with a backend-generated ID)
       title: title,
       description: description,
-      category: category,
+      category: "todo",
       taskUser: user?.email,
       timestamp: currentTime, // You can adjust this format as per your requirement
     };
@@ -227,14 +227,14 @@ const Todo = () => {
           className="w-full p-2 mb-4 border border-gray-200 rounded-md"
           required
         />
-        <select
+        {/* <select
           className="w-full p-2 mb-4 border border-gray-200 rounded-md"
           name="category" // Add name attribute for category
         >
           <option value="todo">To-Do</option>
           <option value="in-progress">In Progress</option>
           <option value="done">Done</option>
-        </select>
+        </select> */}
         <button
           type="submit"
           className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
