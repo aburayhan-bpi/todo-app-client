@@ -1,8 +1,8 @@
 import { Link, NavLink, useNavigate } from "react-router";
 import useAuth from "../hooks/useAuth";
-import { FiUser } from "react-icons/fi";
+
 import { TbLogout2 } from "react-icons/tb";
-import { IoSettingsOutline } from "react-icons/io5";
+
 import { useState } from "react";
 import { IoIosArrowUp } from "react-icons/io";
 import { LuListTodo } from "react-icons/lu";

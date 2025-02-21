@@ -49,56 +49,19 @@ const Todo = () => {
     },
   });
 
-  // console.log(tasks);
-
-  // const [allTasks, allSetTasks] = useState({});
-
-  const handleMoveToInProgress = (taskId) => {
-    // Logic to move task to In Progress
-    console.log(taskId);
-
+  const handleMoveToCategory = (taskId, category) => {
     axios
-      .put(`http://localhost:5000/tasks/${taskId}?category=in-progress`)
+      .put(`http://localhost:5000/tasks/${taskId}?category=${category}`)
       .then((res) => {
-        console.log(res.data);
         if (res.data.modifiedCount > 0) {
-          toast.success("Task marks as Progress.");
-          refetch();
-        }
-      });
-  };
-
-  const handleMoveToDone = (taskId) => {
-    // Logic to move task to Done
-    axios
-      .put(`http://localhost:5000/tasks/${taskId}?category=done`)
-      .then((res) => {
-        console.log(res.data);
-        if (res.data.modifiedCount > 0) {
-          toast.success("Task marks as Done.");
-          refetch();
-        }
-      });
-  };
-  const handleMoveToDo = (taskId) => {
-    // Logic to move task to Done
-    axios
-      .put(`http://localhost:5000/tasks/${taskId}?category=todo`)
-      .then((res) => {
-        console.log(res.data);
-        if (res.data.modifiedCount > 0) {
-          toast.success("Task marks as Todo.");
+          toast.success(`Task moved to ${category}.`);
           refetch();
         }
       });
   };
 
   const handleDelete = (taskId) => {
-    // Logic to delete task
-    console.log(taskId);
-
     axios.delete(`http://localhost:5000/tasks/${taskId}`).then((res) => {
-      console.log(res.data);
       if (res.data.deletedCount > 0) {
         toast.success("Task deleted.");
         refetch();
@@ -107,12 +70,9 @@ const Todo = () => {
   };
 
   const handleEditModal = (taskId) => {
-    // Logic to edit task, can open a modal or a form
-    console.log(taskId);
     document.getElementById("my_modal_5").showModal();
     const task = tasks.find((task) => task.id === taskId);
     setEditableTask(task);
-    console.log(task);
   };
   useEffect(() => {
     if (editableTask) {
@@ -122,24 +82,12 @@ const Todo = () => {
       setValue("category", editableTask?.category || "todo");
     }
   }, [editableTask, setValue]);
-  // const handleUpdateTask = (e) => {
-  //   // console.log(id);
-  //   e.preventDefault(); // Prevent form submission
 
-  //   const formElement = e.target;
-  //   const title = formElement.title.value; // Accessing the title input
-  //   const description = formElement.description.value;
-  //   const updateTaskInfo = {
-  //     title,
-  //     description,
-  //     currentTime,
-  //   };
-  //   console.log(updateTaskInfo);
-  // };
   const handleClose = () => {
     document.getElementById("my_modal_5").close();
-    reset();
+    // reset();
   };
+
   const onSubmit = (data) => {
     const updatedTask = {
       title: data?.title,
@@ -151,7 +99,6 @@ const Todo = () => {
     axios
       .put(`http://localhost:5000/tasks/${editableTask?.id}`, updatedTask)
       .then((res) => {
-        console.log(res.data);
         if (res.data.matchedCount > 0 || res.data.modifiedCount > 0) {
           toast.success("Task updated.");
           refetch();
@@ -161,34 +108,27 @@ const Todo = () => {
         console.log(err);
       });
 
-    // console.log(updatedTask);
-
-    // reset();
     document.getElementById("my_modal_5").close();
   };
 
   const handleAddTask = (e) => {
-    e.preventDefault(); // Prevent form submission
-
+    e.preventDefault();
     const formElement = e.target;
-    const title = formElement.title.value; // Accessing the title input
-    const description = formElement.description.value; // Accessing the description textarea
-    // const category = formElement.category.value; // Accessing the category select
+    const title = formElement.title.value;
+    const description = formElement.description.value;
 
     const newTask = {
-      id: new Date().getTime(), // Generate a unique ID (you can replace this with a backend-generated ID)
-      title: title,
-      description: description,
+      id: new Date().getTime(),
+      title,
+      description,
       category: "todo",
       taskUser: user?.email,
-      timestamp: currentTime, // You can adjust this format as per your requirement
+      timestamp: currentTime,
     };
-    // console.log(newTask);
 
     axios
       .post("http://localhost:5000/tasks", newTask)
       .then((res) => {
-        console.log(res.data);
         if (res.data?.insertedId) {
           toast.success("Task added");
           refetch();
@@ -198,15 +138,33 @@ const Todo = () => {
         console.log(err.message);
       });
 
-    // Reset form
     formElement.reset();
+  };
+
+  // Drag & Drop Functions
+  const handleDragStart = (e, taskId, currentCategory) => {
+    e.dataTransfer.setData("taskId", taskId);
+    e.dataTransfer.setData("currentCategory", currentCategory); // Store current category
+  };
+
+  const handleDrop = (e, newCategory) => {
+    const taskId = e.dataTransfer.getData("taskId");
+    const currentCategory = e.dataTransfer.getData("currentCategory");
+
+    if (newCategory !== currentCategory) {
+      // Update only if category changes
+      handleMoveToCategory(taskId, newCategory);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
   };
 
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-3xl font-bold mb-8 text-gray-800">Task Management</h1>
 
-      {/* Add Task Form */}
       <form
         onSubmit={handleAddTask}
         className="bg-white p-6 rounded-lg shadow-md mb-8"
@@ -216,25 +174,18 @@ const Todo = () => {
         </h2>
         <input
           type="text"
-          name="title" // Add name attribute for title
-          placeholder="Task Title"
+          name="title"
+          placeholder="Task Title (max 50 characters)"
           className="w-full p-2 mb-4 border border-gray-200 rounded-md"
+          maxLength={50}
           required
         />
         <textarea
-          placeholder="Task Description"
-          name="description" // Add name attribute for description
+          placeholder="Task Description (optional, max 200 characters)"
+          name="description"
           className="w-full p-2 mb-4 border border-gray-200 rounded-md"
-          required
+          maxLength={200}
         />
-        {/* <select
-          className="w-full p-2 mb-4 border border-gray-200 rounded-md"
-          name="category" // Add name attribute for category
-        >
-          <option value="todo">To-Do</option>
-          <option value="in-progress">In Progress</option>
-          <option value="done">Done</option>
-        </select> */}
         <button
           type="submit"
           className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
@@ -243,19 +194,24 @@ const Todo = () => {
         </button>
       </form>
 
-      {/* Task Columns */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* To-Do Column */}
-        <div className="bg-gray-50 p-4 rounded-lg shadow-md">
+        {/* Todo Column */}
+        <div
+          onDrop={(e) => handleDrop(e, "todo")}
+          onDragOver={handleDragOver}
+          className="bg-gray-50 p-4 rounded-lg shadow-md"
+        >
           <h2 className="text-xl font-semibold text-gray-800 mb-4">To-Do</h2>
           {tasks
             .filter((task) => task.category === "todo")
             .map((task) => (
               <div
                 key={task.id}
-                className="bg-white p-4 rounded-lg shadow-sm mb-4"
+                draggable
+                onDragStart={(e) => handleDragStart(e, task.id, task.category)}
+                className="bg-white p-4 rounded-lg shadow-sm mb-4 cursor-grab"
               >
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-gray-800 overflow-hidden">
                   {task.title}
                 </h3>
                 <p className="text-sm text-gray-600 mt-2">{task.description}</p>
@@ -264,26 +220,26 @@ const Todo = () => {
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
                   <button
-                    onClick={() => handleMoveToInProgress(task.id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+                    onClick={() => handleMoveToCategory(task.id, "in-progress")}
+                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <RiProgress1Line />
                   </button>
                   <button
-                    onClick={() => handleMoveToDone(task.id)}
-                    className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
+                    onClick={() => handleMoveToCategory(task.id, "done")}
+                    className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <IoCheckmarkDone />
                   </button>
                   <button
                     onClick={() => handleEditModal(task.id)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <CiEdit />
                   </button>
                   <button
                     onClick={() => handleDelete(task.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg"
+                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <MdDeleteOutline />
                   </button>
@@ -293,7 +249,11 @@ const Todo = () => {
         </div>
 
         {/* In Progress Column */}
-        <div className="bg-gray-50 p-4 rounded-lg shadow-md">
+        <div
+          onDrop={(e) => handleDrop(e, "in-progress")}
+          onDragOver={handleDragOver}
+          className="bg-gray-50 p-4 rounded-lg shadow-md cursor-grab"
+        >
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             In Progress
           </h2>
@@ -302,9 +262,11 @@ const Todo = () => {
             .map((task) => (
               <div
                 key={task.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, task.id, task.category)}
                 className="bg-white p-4 rounded-lg shadow-sm mb-4"
               >
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-gray-800 overflow-hidden">
                   {task.title}
                 </h3>
                 <p className="text-sm text-gray-600 mt-2">{task.description}</p>
@@ -313,26 +275,26 @@ const Todo = () => {
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
                   <button
-                    onClick={() => handleMoveToDo(task.id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+                    onClick={() => handleMoveToCategory(task.id, "todo")}
+                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <RiCalendarTodoLine />
                   </button>
                   <button
-                    onClick={() => handleMoveToDone(task.id)}
-                    className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
+                    onClick={() => handleMoveToCategory(task.id, "done")}
+                    className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <IoCheckmarkDone />
                   </button>
                   <button
                     onClick={() => handleEditModal(task.id)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <CiEdit />
                   </button>
                   <button
                     onClick={() => handleDelete(task.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg"
+                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <MdDeleteOutline />
                   </button>
@@ -342,16 +304,22 @@ const Todo = () => {
         </div>
 
         {/* Done Column */}
-        <div className="bg-gray-50 p-4 rounded-lg shadow-md">
+        <div
+          onDrop={(e) => handleDrop(e, "done")}
+          onDragOver={handleDragOver}
+          className="bg-gray-50 p-4 rounded-lg shadow-md cursor-grab"
+        >
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Done</h2>
           {tasks
             .filter((task) => task.category === "done")
             .map((task) => (
               <div
                 key={task.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, task.id, task.category)}
                 className="bg-white p-4 rounded-lg shadow-sm mb-4"
               >
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-gray-800 overflow-hidden">
                   {task.title}
                 </h3>
                 <p className="text-sm text-gray-600 mt-2">{task.description}</p>
@@ -360,26 +328,26 @@ const Todo = () => {
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
                   <button
-                    onClick={() => handleMoveToDo(task.id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+                    onClick={() => handleMoveToCategory(task.id, "todo")}
+                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <RiCalendarTodoLine />
                   </button>
                   <button
-                    onClick={() => handleMoveToInProgress(task.id)}
-                    className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg"
+                    onClick={() => handleMoveToCategory(task.id, "in-progress")}
+                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <RiProgress1Line />
                   </button>
                   <button
                     onClick={() => handleEditModal(task.id)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <CiEdit />
                   </button>
                   <button
                     onClick={() => handleDelete(task.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg"
+                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg cursor-pointer"
                   >
                     <MdDeleteOutline />
                   </button>
@@ -387,14 +355,6 @@ const Todo = () => {
               </div>
             ))}
         </div>
-        {/* modal */}
-        {/* Open the modal using document.getElementById('ID').showModal() method */}
-        {/* <button
-          className="btn"
-          onClick={() => document.getElementById("my_modal_5").showModal()}
-        >
-          open modal
-        </button> */}
         <dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
           <div className="modal-box relative">
             {/* Close Button in the Top Right Corner */}
