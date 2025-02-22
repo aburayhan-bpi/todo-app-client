@@ -309,7 +309,7 @@ const Todo = () => {
                     .local()
                     .format("MMMM Do YYYY, h:mm:ss a")}
                 </p>
-                <p className="text-blue-600 bg-blue-200 capitalize text-xs w-fit px-2 py-1 rounded-lg my-1">
+                <p className="text-yellow-600 bg-yellow-200 capitalize text-xs w-fit px-2 py-1 rounded-lg my-1">
                   {task?.category}
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
@@ -374,7 +374,7 @@ const Todo = () => {
                     .local()
                     .format("MMMM Do YYYY, h:mm:ss a")}
                 </p>
-                <p className="text-blue-600 bg-blue-200 capitalize text-xs w-fit px-2 py-1 rounded-lg my-1">
+                <p className="text-green-600 bg-green-200 capitalize text-xs w-fit px-2 py-1 rounded-lg my-1">
                   {task?.category}
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
