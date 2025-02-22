@@ -9,6 +9,7 @@ import { CiEdit } from "react-icons/ci";
 import { MdDeleteOutline } from "react-icons/md";
 import { IoCheckmarkDone } from "react-icons/io5";
 import { useForm } from "react-hook-form";
+import Loader from "../../components/Loader";
 
 const Todo = () => {
   document.title = "TODO | Task Dashboard";
@@ -216,6 +217,11 @@ const Todo = () => {
           className="bg-gray-50 p-4 rounded-lg shadow-md"
         >
           <h2 className="text-xl font-semibold text-gray-800 mb-4">To-Do</h2>
+          {isLoading && (
+            <div className="flex items-center justify-center">
+              <span className="loading loading-ring loading-xl "></span>
+            </div>
+          )}
           {tasks
             .filter((task) => task.category === "todo")
             .map((task) => (
@@ -235,6 +241,9 @@ const Todo = () => {
                     .utc(task.timestamp)
                     .local()
                     .format("MMMM Do YYYY, h:mm:ss a")}
+                </p>
+                <p className="text-blue-600 bg-blue-200 capitalize text-xs w-fit px-2 py-1 rounded-lg my-1">
+                  {task?.category}
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
                   <button
@@ -270,11 +279,16 @@ const Todo = () => {
         <div
           onDrop={(e) => handleDrop(e, "in-progress")}
           onDragOver={handleDragOver}
-          className="bg-gray-50 p-4 rounded-lg shadow-md cursor-grab"
+          className="bg-gray-50 p-4 rounded-lg shadow-md"
         >
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             In Progress
           </h2>
+          {isLoading && (
+            <div className="flex items-center justify-center">
+              <span className="loading loading-ring loading-xl "></span>
+            </div>
+          )}
           {tasks
             .filter((task) => task.category === "in-progress")
             .map((task) => (
@@ -282,7 +296,7 @@ const Todo = () => {
                 key={task.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, task.id, task.category)}
-                className="bg-white p-4 rounded-lg shadow-sm mb-4"
+                className="bg-white p-4 rounded-lg shadow-sm mb-4 cursor-grab"
               >
                 <h3 className="text-lg font-semibold text-gray-800 overflow-hidden">
                   {task.title}
@@ -294,6 +308,9 @@ const Todo = () => {
                     .utc(task.timestamp)
                     .local()
                     .format("MMMM Do YYYY, h:mm:ss a")}
+                </p>
+                <p className="text-blue-600 bg-blue-200 capitalize text-xs w-fit px-2 py-1 rounded-lg my-1">
+                  {task?.category}
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
                   <button
@@ -329,9 +346,14 @@ const Todo = () => {
         <div
           onDrop={(e) => handleDrop(e, "done")}
           onDragOver={handleDragOver}
-          className="bg-gray-50 p-4 rounded-lg shadow-md cursor-grab"
+          className="bg-gray-50 p-4 rounded-lg shadow-md "
         >
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Done</h2>
+          {isLoading && (
+            <div className="flex items-center justify-center">
+              <span className="loading loading-ring loading-xl "></span>
+            </div>
+          )}
           {tasks
             .filter((task) => task.category === "done")
             .map((task) => (
@@ -339,7 +361,7 @@ const Todo = () => {
                 key={task.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, task.id, task.category)}
-                className="bg-white p-4 rounded-lg shadow-sm mb-4"
+                className="bg-white p-4 rounded-lg shadow-sm mb-4 cursor-grab"
               >
                 <h3 className="text-lg font-semibold text-gray-800 overflow-hidden">
                   {task.title}
@@ -351,6 +373,9 @@ const Todo = () => {
                     .utc(task.timestamp)
                     .local()
                     .format("MMMM Do YYYY, h:mm:ss a")}
+                </p>
+                <p className="text-blue-600 bg-blue-200 capitalize text-xs w-fit px-2 py-1 rounded-lg my-1">
+                  {task?.category}
                 </p>
                 <div className="mt-4 flex justify-between space-x-2">
                   <button

@@ -17,7 +17,7 @@ createRoot(document.getElementById("root")).render(
           <AppRoutes />{" "}
           {/* AppRoutes should be the routes component directly */}
         </BrowserRouter>
-        <Toaster />
+        <Toaster position="top-right" reverseOrder={false}/>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>
